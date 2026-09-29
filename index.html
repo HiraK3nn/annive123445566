@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyeux anniversaire 🎂</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ====== Palette ====== */
+:root{
+  --term-bg:#000; --peach:#ffd9c7; --mint:#9ff0d0; --dim:#8d7fa3;
+  --rose:#ffb3cb; --cream:#fff5f8; --lilac:#d9c2ff; --plum:#3a2a52;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--term-bg);overflow:hidden}
+
+/* ====== Écran 1 : terminal ====== */
+#term{position:fixed;inset:0;padding:clamp(16px,4vw,48px);display:flex;flex-direction:row;gap:32px;
+  animation-fill-mode:forwards}
+#log{flex:1;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.line{white-space:pre-wrap;word-break:break-all}
+.ok{color:var(--mint)} .dim{color:var(--dim)}
+.bar{color:var(--mint)}
+.cursor::after{content:"▌";animation:blink 1s steps(2) infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+#gallery{width:45%;display:flex;flex-wrap:wrap;align-content:flex-start;gap:12px;overflow:auto}
+#gallery figure{width:calc(50% - 6px);aspect-ratio:1;border:2px solid var(--mint);border-radius:8px;
+  overflow:hidden;display:grid;place-items:center;font-size:48px;background:#000;animation:pop .35s ease-out}
+#gallery img{width:100%;height:100%;object-fit:cover}
+@keyframes pop{from{transform:scale(.4);opacity:0}}
+#skip{position:absolute;right:20px;top:16px;background:none;border:0;color:var(--dim);
+  font:inherit;cursor:pointer;text-decoration:underline}
+#skip:focus-visible{outline:2px solid var(--mint)}
+#term.out{animation:tpOut 1s ease-in forwards}
+@keyframes tpOut{0%{transform:none;filter:none}40%{transform:scale(1,.01);filter:brightness(4)}100%{transform:scale(0,.01);filter:brightness(4)}}
+
+/* ====== Écran 2 : gâteau ====== */
+#cake{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:16px;font-family:"Fredoka","Trebuchet MS",sans-serif;color:var(--plum);
+  background:linear-gradient(180deg,#ffe8ef,#f1dcff);transition:color 1.2s}
+#cake.in{display:flex;animation:tpIn 1s ease-out both}
+@keyframes tpIn{0%{transform:scale(0,.01);filter:brightness(4)}60%{transform:scale(1,.01);filter:brightness(4)}100%{transform:none;filter:none}}
+#night{position:absolute;inset:0;background:#241a38;opacity:0;transition:opacity 1.6s;z-index:0}
+#cake.done #night{opacity:1}
+#cake.done{color:#ffe8ef}
+#cake > *:not(#night):not(.confetti){position:relative;z-index:1}
+#caption{text-align:center;min-height:5.5rem}
+#caption h1{font-size:clamp(26px,6vw,44px);font-weight:600}
+#caption p{font-size:clamp(15px,3.6vw,19px);max-width:34ch;margin:6px auto 0}
+svg{width:min(88vw,420px);height:auto;overflow:visible}
+.candle{cursor:pointer}
+.candle:focus-visible{outline:none}
+.candle:focus-visible .stick{stroke:var(--plum);stroke-width:3}
+.flame{transform-box:fill-box;transform-origin:50% 100%;animation:flick 1.1s ease-in-out infinite alternate;
+  transition:transform .3s,opacity .3s}
+.candle:nth-child(2n) .flame{animation-delay:-.5s}
+@keyframes flick{from{transform:scale(1,1) rotate(-3deg)}to{transform:scale(.92,1.08) rotate(3deg)}}
+.candle.off .flame{animation:none;transform:scale(0);opacity:0}
+.smoke{fill:#fff;opacity:.8;transform-box:fill-box;transform-origin:center;animation:smoke 1.4s ease-out forwards}
+@keyframes smoke{to{transform:translateY(-60px) scale(3);opacity:0}}
+#replay{margin-top:4px;padding:8px 18px;border:0;border-radius:99px;background:var(--rose);color:var(--plum);
+  font:inherit;cursor:pointer;display:none}
+#cake.done #replay{display:inline-block}
+.confetti{position:absolute;top:-20px;width:9px;height:14px;z-index:2;pointer-events:none;
+  animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){
+  #term.out,#cake.in{animation-duration:.01s}
+  .flame{animation:none} .confetti{display:none}
+}
+@media (max-width:700px){
+  #term{flex-direction:column}
+  #gallery{width:100%;max-height:40%}
+  #gallery figure{width:calc(33.33% - 8px)}
+}
+</style>
+</head>
+<body>
+
+<div id="term">
+  <button id="skip">passer</button>
+  <div id="log"></div>
+  <div id="gallery"></div>
+</div>
+
+<div id="cake">
+  <div id="night"></div>
+  <div id="caption"></div>
+  <svg id="svg" viewBox="0 0 400 400" aria-label="Gâteau d'anniversaire"></svg>
+  <button id="replay">Rallumer les bougies</button>
+</div>
+
+<script>
+/* ==================== À PERSONNALISER ==================== */
+const NAME    = "Prénom";              // son prénom
+const CANDLES = 5;                     // nombre de bougies (1 à 8)
+const PHOTOS  = [                      // mets tes photos dans un dossier "photos/"
+  "photos/1.jpg", "photos/2.jpg", "photos/3.jpg", "photos/4.jpg", "photos/5.jpg"
+];
+const MESSAGE = "Je t'aime. Merci d'être là, et que cette année soit géniale.";  // ton petit mot
+const FROM    = "Ta destination : ton anniversaire";                              // texte de fin de chargement
+/* ========================================================= */
+
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const log = $("#log"), gallery = $("#gallery");
+let skipped = false, teleported = false;
+
+/* ---------- Écran terminal ---------- */
+async function typeLine(text, cls = "") {
+  const p = document.createElement("div");
+  p.className = "line " + cls;
+  log.appendChild(p);
+  if (skipped) { p.textContent = text; return p; }
+  for (const ch of text) { p.textContent += ch; await sleep(25 + Math.random() * 30); }
+  return p;
+}
+
+async function loadPhoto(src) {
+  const name = src.split("/").pop();
+  const line = await typeLine(`> chargement ${name}`);
+  const bar = document.createElement("span");
+  bar.className = "bar";
+  line.appendChild(bar);
+  let p = 0;
+  while (p < 100) {
+    p = Math.min(100, p + Math.random() * 22 + 6);
+    bar.textContent = " [" + "█".repeat(Math.round(p / 5)).padEnd(20, "░") + "] " + Math.round(p) + "%";
+    if (!skipped) await sleep(150);
+  }
+  line.classList.add("ok");
+  const fig = document.createElement("figure");
+  const img = new Image();
+  img.alt = "";
+  img.onload = () => fig.replaceChildren(img);
+  img.onerror = () => { fig.textContent = "💗"; };
+  img.src = src;
+  fig.textContent = "💗";
+  gallery.appendChild(fig);
+}
+
+function waitForClick() {
+  return new Promise(res => {
+    addEventListener("click", res, { once: true });
+    addEventListener("keydown", res, { once: true });
+  });
+}
+
+async function boot() {
+  await typeLine("téléporteur v1.0 — démarrage...", "dim");
+  await sleep(700);
+  await typeLine("> vérification des coordonnées............ OK", "ok");
+  await sleep(500);
+  await typeLine("> calibrage du portail.................... OK", "ok");
+  await sleep(500);
+  await typeLine("> synchronisation des étoiles............. OK", "ok");
+  await sleep(700);
+  await typeLine("> recherche de la personne la plus importante...");
+  await sleep(1500);
+  await typeLine("> 1 résultat trouvé.", "ok");
+  await sleep(900);
+  await typeLine("> récupération des souvenirs :");
+  for (const src of PHOTOS) { await loadPhoto(src); await sleep(600); }
+  await typeLine("> tous les souvenirs sont chargés.", "ok");
+  await sleep(900);
+  await typeLine("> compression de l'espace-temps.......... OK", "ok");
+  await sleep(600);
+  await typeLine("> destination : " + FROM);
+  await sleep(1000);
+  await typeLine("> portail prêt.", "ok");
+  await sleep(800);
+  await typeLine("> clique n'importe où pour te téléporter", "cursor");
+  await waitForClick();
+  teleport();
+}
+
+function teleport() {
+  if (teleported) return;
+  teleported = true;
+  const t = $("#term");
+  t.classList.add("out");
+  setTimeout(() => {
+    t.style.display = "none";
+    document.body.style.background = "var(--term-bg)";
+    showCake();
+  }, 950);
+}
+
+$("#skip").onclick = () => { skipped = true; teleport(); };
+
+/* ---------- Écran gâteau ---------- */
+const stripes = ["#ffd166", "#8ee3c8", "#ff8fb1", "#a9c8ff"];
+let remaining = CANDLES;
+
+function buildCake() {
+  const n = Math.max(1, Math.min(8, CANDLES));
+  let s = `
+    <ellipse cx="200" cy="368" rx="170" ry="22" fill="#fff" stroke="#f3c6d8" stroke-width="3"/>
+    <rect x="60" y="240" width="280" height="122" rx="28" fill="#ffb3cb"/>
+    <rect x="60" y="240" width="280" height="26" rx="13" fill="#fff5f8"/>`;
+  for (let x = 84; x <= 316; x += 46) s += `<circle cx="${x}" cy="266" r="13" fill="#fff5f8"/>`;
+  s += `
+    <rect x="100" y="170" width="200" height="80" rx="24" fill="#d9c2ff"/>
+    <rect x="100" y="170" width="200" height="22" rx="11" fill="#fff5f8"/>`;
+  for (let x = 122; x <= 280; x += 39) s += `<circle cx="${x}" cy="192" r="10" fill="#fff5f8"/>`;
+  s += `
+    <g fill="#5a3a4e"><circle cx="160" cy="308" r="6"/><circle cx="240" cy="308" r="6"/></g>
+    <g fill="#ff8fb1" opacity=".65"><ellipse cx="138" cy="324" rx="14" ry="8"/><ellipse cx="262" cy="324" rx="14" ry="8"/></g>
+    <path d="M188 318q12 12 24 0" fill="none" stroke="#5a3a4e" stroke-width="4" stroke-linecap="round"/>
+    <g fill="#ff8fb1"><rect x="128" y="224" width="8" height="4" rx="2" transform="rotate(30 132 226)"/>
+    <rect x="200" y="230" width="8" height="4" rx="2" transform="rotate(-40 204 232)"/>
+    <rect x="262" y="222" width="8" height="4" rx="2" transform="rotate(60 266 224)"/></g>
+    <g fill="#8ee3c8"><rect x="164" y="222" width="8" height="4" rx="2" transform="rotate(-20 168 224)"/>
+    <rect x="236" y="232" width="8" height="4" rx="2" transform="rotate(20 240 234)"/></g>`;
+  for (let i = 0; i < n; i++) {
+    const x = 100 + 200 * (i + 1) / (n + 1);
+    s += `
+    <g class="candle" tabindex="0" role="button" aria-label="Éteindre la bougie ${i + 1}" data-x="${x}">
+      <rect x="${x - 18}" y="80" width="36" height="96" fill="transparent"/>
+      <rect class="stick" x="${x - 6}" y="120" width="12" height="52" rx="4" fill="${stripes[i % 4]}"/>
+      <line x1="${x}" y1="120" x2="${x}" y2="112" stroke="#5a3a4e" stroke-width="2" stroke-linecap="round"/>
+      <g class="flame" transform="translate(${x} 110)">
+        <path d="M0-24C11-9 10 4 0 4C-10 4-11-9 0-24Z" fill="#ffcf5c"/>
+        <path d="M0-12C5-5 5 2 0 2C-5 2-5-5 0-12Z" fill="#fff3b0"/>
+      </g>
+    </g>`;
+  }
+  $("#svg").innerHTML = s;
+  document.querySelectorAll(".candle").forEach(c => {
+    const blow = () => blowOut(c);
+    c.addEventListener("click", blow);
+    c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); blow(); } });
+  });
+}
+
+function setCaption() {
+  const cap = $("#caption");
+  if (remaining > 0) {
+    cap.innerHTML = `<h1>Fais un vœu ✨</h1><p>Clique sur les bougies pour les éteindre.<br>Encore ${remaining} ${remaining > 1 ? "allumées" : "allumée"}.</p>`;
+  } else {
+    cap.innerHTML = `<h1>Joyeux anniversaire ${NAME} 🎂</h1><p>${MESSAGE}</p>`;
+  }
+}
+
+function blowOut(c) {
+  if (c.classList.contains("off")) return;
+  c.classList.add("off");
+  c.removeAttribute("tabindex");
+  const puff = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  puff.setAttribute("class", "smoke");
+  puff.setAttribute("cx", c.dataset.x);
+  puff.setAttribute("cy", 104);
+  puff.setAttribute("r", 5);
+  $("#svg").appendChild(puff);
+  setTimeout(() => puff.remove(), 1500);
+  remaining--;
+  setCaption();
+  if (remaining === 0) setTimeout(celebrate, 500);
+}
+
+function celebrate() {
+  $("#cake").classList.add("done");
+  const colors = ["#ffb3cb", "#d9c2ff", "#ffd166", "#8ee3c8", "#a9c8ff"];
+  for (let i = 0; i < 80; i++) {
+    const d = document.createElement("div");
+    d.className = "confetti";
+    d.style.left = Math.random() * 100 + "vw";
+    d.style.background = colors[i % colors.length];
+    d.style.animationDuration = 2.5 + Math.random() * 3 + "s";
+    d.style.animationDelay = Math.random() * 1.5 + "s";
+    $("#cake").appendChild(d);
+    setTimeout(() => d.remove(), 8000);
+  }
+}
+
+function showCake() {
+  remaining = Math.max(1, Math.min(8, CANDLES));
+  $("#cake").classList.remove("done");
+  buildCake();
+  setCaption();
+  $("#cake").classList.add("in");
+}
+
+$("#replay").onclick = () => {
+  remaining = Math.max(1, Math.min(8, CANDLES));
+  $("#cake").classList.remove("done");
+  buildCake();
+  setCaption();
+};
+
+boot();
+</script>
+</body>
+</html>
