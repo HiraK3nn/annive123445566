@@ -147,28 +147,30 @@ function waitForClick() {
 }
 
 async function boot() {
-  await typeLine("téléporteur v1.0 — démarrage...", "dim");
+  await typeLine("téléporteur pour l'anniversaire de Maëlys v8.8 — démarrage...", "dim");
   await sleep(700);
   await typeLine("> vérification des coordonnées............ OK", "ok");
-  await sleep(500);
+  await sleep(300);
+  await typeLine("> La chapelle-heulin............ OK", "ok");
+  await sleep(300);
   await typeLine("> calibrage du portail.................... OK", "ok");
-  await sleep(500);
+  await sleep(300);
   await typeLine("> synchronisation des étoiles............. OK", "ok");
-  await sleep(700);
+  await sleep(400);
   await typeLine("> recherche de la personne la plus importante...");
-  await sleep(1500);
+  await sleep(700);
   await typeLine("> 1 résultat trouvé.", "ok");
-  await sleep(900);
+  await sleep(800);
   await typeLine("> récupération des souvenirs :");
-  for (const src of PHOTOS) { await loadPhoto(src); await sleep(600); }
+  for (const src of PHOTOS) { await loadPhoto(src); await sleep(500); }
   await typeLine("> tous les souvenirs sont chargés.", "ok");
   await sleep(900);
   await typeLine("> compression de l'espace-temps.......... OK", "ok");
-  await sleep(600);
-  await typeLine("> destination : " + FROM);
+  await sleep(300);
+  await typeLine("> destination : Chambre de Maëlys et plus précisement dans le lit" + FROM);
   await sleep(1000);
   await typeLine("> portail prêt.", "ok");
-  await sleep(800);
+  await sleep(700);
   await typeLine("> clique n'importe où pour te téléporter", "cursor");
   await waitForClick();
   teleport();
