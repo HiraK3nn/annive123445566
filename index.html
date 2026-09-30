@@ -16,6 +16,7 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
 
 /* ====== Écran 1 : terminal ====== */
 #term{position:fixed;inset:0;padding:clamp(16px,4vw,48px);display:flex;flex-direction:row;gap:32px;
+  font:15px/1.6 ui-monospace,Menlo,Consolas,monospace;color:var(--peach);
   animation-fill-mode:forwards}
 #log{flex:1;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
 .line{white-space:pre-wrap;word-break:break-all}
@@ -92,8 +93,8 @@ svg{width:min(88vw,420px);height:auto;overflow:visible}
 
 <script>
 /* ==================== À PERSONNALISER ==================== */
-const NAME    = "Prénom";              // son prénom
-const CANDLES = 5;                     // nombre de bougies (1 à 8)
+const NAME    = "Maëlys";              // son prénom
+const CANDLES = 8;                     // nombre de bougies (1 à 8)
    const PHOTOS = [
      "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg"
    ];
@@ -167,7 +168,7 @@ async function boot() {
   await sleep(900);
   await typeLine("> compression de l'espace-temps.......... OK", "ok");
   await sleep(300);
-  await typeLine("> destination : Chambre de Maëlys et plus précisement dans le lit" + FROM);
+  await typeLine("> destination : Chambre de Maëlys, et plus précisément dans le lit");
   await sleep(1000);
   await typeLine("> portail prêt.", "ok");
   await sleep(700);
