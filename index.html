@@ -83,7 +83,6 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
 <div id="term">
   <button id="skip">passer</button>
   <div id="log"></div>
-  <div id="gallery"></div>
 </div>
 
 <div id="cake">
@@ -107,7 +106,7 @@ const FROM    = "Ta destination : ton anniversaire";                            
 
 const $ = s => document.querySelector(s);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const log = $("#log"), gallery = $("#gallery");
+const log = $("#log");
 let skipped = false, teleported = false;
 
 /* ---------- Écran terminal ---------- */
@@ -116,7 +115,7 @@ async function typeLine(text, cls = "") {
   p.className = "line " + cls;
   log.appendChild(p);
   if (skipped) { p.textContent = text; return p; }
-  for (const ch of text) { p.textContent += ch; await sleep(25 + Math.random() * 30); }
+  for (const ch of text) { p.textContent += ch; await sleep(8 + Math.random() * 8); }
   return p;
 }
 
@@ -151,30 +150,18 @@ function waitForClick() {
 }
 
 async function boot() {
+  PHOTOS.forEach(s => { new Image().src = s; });   // précharge les photos pour la balade
   await typeLine("téléporteur pour l'anniversaire de Maëlys v8.8 — démarrage...", "dim");
-  await sleep(700);
   await typeLine("> vérification des coordonnées............ OK", "ok");
-  await sleep(300);
   await typeLine("> La chapelle-heulin............ OK", "ok");
-  await sleep(300);
   await typeLine("> calibrage du portail.................... OK", "ok");
-  await sleep(300);
-  await typeLine("> synchronisation des étoiles............. OK", "ok");
-  await sleep(400);
   await typeLine("> recherche de la personne la plus importante...");
-  await sleep(700);
+  await sleep(400);
   await typeLine("> 1 résultat trouvé.", "ok");
-  await sleep(800);
-  await typeLine("> récupération des souvenirs :");
-  for (const src of PHOTOS) { await loadPhoto(src); await sleep(500); }
-  await typeLine("> tous les souvenirs sont chargés.", "ok");
-  await sleep(900);
-  await typeLine("> compression de l'espace-temps.......... OK", "ok");
-  await sleep(300);
   await typeLine("> destination : Chambre de Maëlys, et plus précisément dans le lit");
-  await sleep(1000);
+  await sleep(300);
   await typeLine("> portail prêt.", "ok");
-  await sleep(700);
+  await sleep(300);
   await typeLine("> clique n'importe où pour te téléporter", "cursor");
   await waitForClick();
   teleport();
