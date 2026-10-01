@@ -3,7 +3,7 @@
    Globales attendues : NAME (prénom) et PHOTOS (tableau de 5 photos), comme avant. */
 (() => {
   const W = 270, H = 480, SPEED = 60, MAPW = 450, MAPH = 637, OUT = "#2b1b3d";
-  const CH = 40;                 // hauteur des persos à l'écran (dos1/dos2.png font déjà 40 px de haut)
+  const CH = 28;                 // hauteur des persos à l'écran (dos1/dos2.png font déjà 28 px de haut)
   const K = MAPW / 723;          // les coordonnées ci-dessous sont en pixels de la carte d'origine (723×1024)
   const pt = (x, y) => ({ x: Math.round(x * K), y: Math.round(y * K) });
   const P = (x, y, id) => [Math.round(x * K), Math.round(y * K), id];
@@ -65,8 +65,7 @@
       const im = ok(f) ? f : front;
       if (!ok(im)) return;
       const h = CH, w = Math.round(h * im.naturalWidth / im.naturalHeight);
-      const hop = moving && Math.floor(t * 5) % 2 ? -2 : 0;
-      return [im, -Math.round(w / 2), -h + hop, w, h];
+      return [im, -Math.round(w / 2), -h, w, h];
     }
     function twinkle(x, y) {
       ctx.fillStyle = "#fff";
