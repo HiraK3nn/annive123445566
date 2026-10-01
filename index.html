@@ -93,7 +93,7 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
   <img id="couple" src="nous.png" alt="Nous deux">
   <button id="replay">Rallumer les bougies</button>
 </div>
-
+<script src="balade.js"></script>
 <script>
 /* ==================== À PERSONNALISER ==================== */
 const NAME    = "Maëlys";              // son prénom
@@ -188,7 +188,7 @@ function teleport() {
   setTimeout(() => {
     t.style.display = "none";
     document.body.style.background = "var(--term-bg)";
-    showCake();
+    startWalk(showCake);
   }, 950);
 }
 
