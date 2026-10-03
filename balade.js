@@ -121,19 +121,22 @@
         const k = Math.floor(s * 12);
         twinkle(cx - 14, cy - 10 + (k % 3)); twinkle(cx + 15, cy - 4 - (k % 2)); twinkle(cx + 2, cy - 22 + (k % 4));
       }
-    }
-    function cake(bx, by, fl) {                    // petit gâteau kawaii : bx = milieu, by = bas
-      rect(bx - 12, by - 3, 24, 3, OUT); rect(bx - 11, by - 2, 22, 1, "#efe3f7");                        // assiette
-      rect(bx - 10, by - 13, 20, 11, OUT); rect(bx - 9, by - 12, 18, 8, "#ff8fb1");                      // étage du bas
-      rect(bx - 9, by - 12, 18, 2, "#fff5f8");                                                           // glaçage
-      rect(bx - 8, by - 10, 2, 2, "#fff5f8"); rect(bx - 3, by - 10, 2, 3, "#fff5f8"); rect(bx + 3, by - 10, 2, 2, "#fff5f8"); rect(bx + 7, by - 10, 2, 3, "#fff5f8");
-      rect(bx - 4, by - 8, 2, 2, OUT); rect(bx + 2, by - 8, 2, 2, OUT); rect(bx - 1, by - 6, 2, 1, OUT);   // yeux + bouche
-      rect(bx - 7, by - 7, 2, 1, "#ff5c8a"); rect(bx + 5, by - 7, 2, 1, "#ff5c8a");                      // joues roses
-      rect(bx - 6, by - 20, 12, 8, OUT); rect(bx - 5, by - 19, 10, 6, "#b99cf5");                        // étage du haut
-      rect(bx - 5, by - 19, 10, 2, "#fff5f8"); rect(bx - 4, by - 17, 2, 2, "#fff5f8"); rect(bx + 1, by - 17, 2, 1, "#fff5f8");
-      rect(bx - 5, by - 24, 4, 4, OUT); rect(bx - 4, by - 23, 2, 2, "#e8344e"); rect(bx - 4, by - 23, 1, 1, "#fff");   // cerise
-      rect(bx + 2, by - 26, 2, 6, "#ffd166"); rect(bx + 2, by - 24, 2, 1, "#fff5f8");                    // bougie
-      rect(bx + 2, by - 30 + fl, 2, 4 - fl, fl ? "#ff9f1c" : "#ffe66d");                                 // flamme
+    function cake(bx, by, fl) {                    // petit gâteau kawaii (≈ 20 × 25 px) : bx = milieu, by = bas
+      const rr = (x, y, w, h, c) => {              // rectangle aux coins arrondis
+        rect(bx + x + 1, by + y, w - 2, 1, c); rect(bx + x, by + y + 1, w, h - 2, c); rect(bx + x + 1, by + y + h - 1, w - 2, 1, c);
+      };
+      const r = (x, y, w, h, c) => rect(bx + x, by + y, w, h, c);
+      r(-10, -2, 20, 2, OUT); r(-9, -2, 18, 1, "#efe3f7");                    // assiette
+      rr(-8, -11, 16, 9, OUT); rr(-7, -10, 14, 7, "#ff8fb1");                 // gros étage rose
+      r(-6, -10, 12, 1, "#fff5f8"); r(-7, -9, 2, 1, "#fff5f8"); r(-3, -9, 2, 2, "#fff5f8"); r(2, -9, 2, 1, "#fff5f8"); r(5, -9, 2, 2, "#fff5f8");   // glaçage
+      r(-4, -8, 1, 2, OUT); r(3, -8, 1, 2, OUT); r(-1, -5, 2, 1, OUT);        // yeux + sourire
+      r(-6, -5, 2, 1, "#ff5c8a"); r(4, -5, 2, 1, "#ff5c8a");                  // joues roses
+      rr(-5, -17, 10, 7, OUT); rr(-4, -16, 8, 5, "#b99cf5");                  // petit étage lavande
+      r(-3, -16, 6, 1, "#fff5f8"); r(-3, -15, 1, 1, "#fff5f8"); r(1, -15, 2, 1, "#fff5f8");
+      r(-4, -20, 3, 1, "#7bd88f"); r(-4, -19, 3, 2, "#e8344e"); r(-3, -17, 1, 1, "#e8344e"); r(-4, -19, 1, 1, "#ff8f9f");   // fraise
+      r(1, -21, 2, 4, "#fff5f8"); r(1, -20, 2, 1, "#ff5c8a"); r(1, -18, 2, 1, "#ff5c8a");   // bougie rayée
+      r(1, -25 + fl, 2, 3 - fl, "#ff9f1c"); r(1, -24 + fl, 2, 2 - fl, "#ffe66d");   // flamme
+      if (Math.floor(t * 3) % 2) twinkle(bx + 13, by - 16); else twinkle(bx - 13, by - 10);   // petite étincelle
     }
 
     /* ---- dessin ---- */
