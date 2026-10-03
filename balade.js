@@ -25,10 +25,11 @@
 
   /* Trajet (x, y sur la carte d'origine) ; le 3e élément = arrêt */
   const ROUTE = [P(362,1000), P(362,668), P(290,668,"a"), P(412,668), P(412,600), P(448,535,"b"),
-                 P(430,440), P(362,432), P(362,342,"c"), P(362,342,"d"), P(362,265,"fin")];
+                 P(430,440), P(362,432), P(362,412,"d"), P(362,342,"c"), P(362,265,"fin")];
   /* Objets déjà dessinés sur la carte : on ne fait que les faire scintiller (centre de l'objet) */
-  const ITEMS = { a:{...pt(237,632), p:0}, b:{...pt(478,487), p:1}, c:{...pt(361,287), p:2} };
-  const LUCARIO = pt(330, 352);  // pieds de Lucario : au bord du chemin, avant les lampadaires (il regarde vers le couple)
+  const ITEMS = { a:{...pt(237,632), p:0}, b:{...pt(478,487), p:1}, c:{...pt(361,287), p:4} };
+  const LUCARIO = pt(404, 414);  // sur le bord droit du chemin, avant l'étoile
+  const LUC_FLIP = false;        // false = regarde à gauche, true = regarde à droite  // pieds de Lucario : au bord du chemin, avant les lampadaires (il regarde vers le couple)
   const CAKE = pt(362, 198);     // bas du gâteau, sous la tour Eiffel
 
   const img = s => { const i = new Image(); i.src = s; return i; };
@@ -174,7 +175,7 @@
       /* Lucario (sprite en pixels natifs, retourné pour regarder vers la droite) */
       if (lucarioOn && ok(luc)) {
         const w = luc.naturalWidth, h = luc.naturalHeight, bob = Math.floor(t * 2) % 2;
-        ctx.save(); ctx.translate(X(LUCARIO.x), Y(LUCARIO.y) - bob); ctx.scale(-1, 1);
+        ctx.save(); ctx.translate(X(LUCARIO.x), Y(LUCARIO.y) - bob); ctx.scale(LUC_FLIP ? -1 : 1, 1);
         ctx.drawImage(luc, -Math.round(w / 2), -h, w, h);
         ctx.restore();
       }
@@ -238,7 +239,7 @@
         if (ITEMS[id]) { found[id] = true; await say(T[id], PHOTOS[ITEMS[id].p]); }
         if (id === "d") {
           smokeT0 = t; await sleep(320); lucarioOn = true; await sleep(800);
-          await say(T.l1()); await say(T.l2, PHOTOS[3]); await say(T.l3, PHOTOS[4]); await say(T.l4);
+          await say(T.l1()); await say(T.l2, PHOTOS[2]); await say(T.l3, PHOTOS[3]); await say(T.l4);
         }
         if (id === "fin") await say(T.fin);
       }
