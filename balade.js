@@ -3,7 +3,7 @@
    Globales attendues : NAME (prénom) et PHOTOS (tableau de 5 photos), comme avant. */
 (() => {
   const ZOOM = 1.25;
-   const W = Math.round(270 / ZOOM), H = Math.round(270 / ZOOM * 16 / 9), SPEED = 37, MAPW = 450, MAPH = 637, OUT = "#2b1b3d";
+  const W = Math.round(270 / ZOOM), H = Math.round(270 / ZOOM * 16 / 9), SPEED = 37, MAPW = 450, MAPH = 637, OUT = "#2b1b3d";
   const MUSIC = "musique.mp3", VOL = 0.5;   // ta musique (mets le fichier à côté du script) et son volume (0 à 1)
   const STEP = 3;                // pas par seconde (cadence de l'animation de marche) : plus petit = plus lent
   const CH = 34;                 // hauteur des persos à l'écran (dos1/dos2.png font déjà 34 px de haut)
