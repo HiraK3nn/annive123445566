@@ -13,9 +13,9 @@
 
   /* ====== TEXTES À PERSONNALISER ====== */
   const T = {
-    a: "Un cadeau est posé devant la maison ! Il y a une photo dedans...",
-    b: "Une lettre dans la boîte aux lettres ! Elle cache une photo.",
-    c: "Une étoile est tombée du ciel... et c'est une photo !",
+    a: "YAAAYYYY ! C'est quoi ce cadeau de malade.",
+    b: "Une lettre dans la boîte aux lettres ! Et non c'était un prank c'est un screamer photo.",
+    c: "Une étoile est tombée du ciel... et nan c'est une photo de nouus cette foiis ciii",
     l1: () => "LUCARIO : Enfin te voilà, " + NAME + " ! Je gardais des souvenirs pour toi.",
     l2: "Regarde celui-ci...",
     l3: "Et celui-là aussi.",
@@ -45,8 +45,15 @@
     #walk canvas{width:min(100vw,56.25vh);height:auto;image-rendering:pixelated}
     #walk .dlg{position:absolute;left:50%;transform:translateX(-50%);bottom:3vh;width:min(94vw,520px);min-height:5.5em;display:none;
       background:#fff5f8;color:${OUT};border:4px solid ${OUT};box-shadow:0 0 0 4px #ff8fb1;padding:14px;font-size:clamp(9px,2.6vw,12px);line-height:1.9}
-    #walk .ph{position:absolute;left:50%;top:5vh;transform:translateX(-50%) rotate(-2deg);display:none;background:#fff5f8;
+    #walk .ph{position:absolute;left:50%;top:5vh;transform:translateX(-50%) rotate(var(--rot,-2deg));display:none;background:#fff5f8;
       padding:10px 10px 22px;border:4px solid ${OUT};box-shadow:6px 6px 0 rgba(0,0,0,.4)}
+    #walk .ph::before{content:"";position:absolute;top:-14px;left:50%;width:56px;height:18px;transform:translateX(-50%) rotate(-3deg);
+      background:rgba(255,143,177,.8);border:2px solid rgba(43,27,61,.35)}
+    #walk .ph.pop{animation:phpop .6s cubic-bezier(.2,.9,.3,1.15) both}
+    @keyframes phpop{
+      0%{transform:translateX(-50%) translateY(30vh) scale(.1) rotate(-28deg);opacity:0}
+      55%{transform:translateX(-50%) translateY(-1vh) scale(1.12) rotate(calc(var(--rot,-2deg) + 5deg));opacity:1}
+      100%{transform:translateX(-50%) translateY(0) scale(1) rotate(var(--rot,-2deg));opacity:1}}
     #walk .ph img{display:block;max-width:min(78vw,340px);max-height:46vh}
     #walk .snd{position:absolute;top:2vh;right:2vw;z-index:2;width:2.6em;height:2.6em;display:flex;align-items:center;justify-content:center;
       background:#fff5f8;color:${OUT};border:3px solid ${OUT};box-shadow:0 0 0 3px #ff8fb1;font-size:clamp(9px,2.6vw,12px)}
@@ -138,7 +145,34 @@
       r(1, -25 + fl, 2, 3 - fl, "#ff9f1c"); r(1, -24 + fl, 2, 2 - fl, "#ffe66d");   // flamme
       if (Math.floor(t * 3) % 2) twinkle(bx + 13, by - 16); else twinkle(bx - 13, by - 10);   // petite étincelle
     }
-
+    /* ---- effet quand on ramasse un objet : flash + anneau + étincelles ---- */
+    const bursts = [];
+    function startBurst(x, y) {
+      const cols = ["#ffd166", "#fff5f8", "#ff8fb1", "#b99cf5", "#fff"];
+      const parts = Array.from({ length: 24 }, (_, i) => {
+        const a = i / 24 * Math.PI * 2 + Math.random() * .3, v = 40 + Math.random() * 50;
+        return { vx: Math.cos(a) * v, vy: Math.sin(a) * v - 28, c: cols[i % cols.length], big: i % 4 === 0 };
+      });
+      bursts.push({ x, y, t0: t, parts });
+    }
+    function drawBursts(X, Y) {
+      for (let i = bursts.length - 1; i >= 0; i--) {
+        const b = bursts[i], l = t - b.t0;
+        if (l > 1) { bursts.splice(i, 1); continue; }
+        const bx = X(b.x), by = Y(b.y);
+        if (l < .18) { ctx.save(); ctx.globalAlpha = 1 - l / .18; disc(bx, by, Math.round(4 + l * 70), "#fff5f8"); ctx.restore(); }
+        if (l < .5) {
+          const R = Math.round(l * 60); ctx.fillStyle = "#ffd166";
+          for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; ctx.fillRect(Math.round(bx + Math.cos(a) * R), Math.round(by + Math.sin(a) * R), 2, 2); }
+        }
+        b.parts.forEach(p => {
+          if (l > .8 && Math.floor(l * 30) % 2) return;
+          const px = Math.round(bx + p.vx * l), py = Math.round(by + p.vy * l + 90 * l * l);
+          ctx.fillStyle = p.c;
+          if (p.big) { ctx.fillRect(px - 1, py, 3, 1); ctx.fillRect(px, py - 1, 1, 3); } else ctx.fillRect(px, py, 2, 2);
+        });
+      }
+    }
     /* ---- dessin ---- */
     function walker() {
       const f = moving ? dos[Math.floor(t * STEP) % 2] : dos[0];
@@ -189,6 +223,7 @@
 
       const w = walker();
       if (w) ctx.drawImage(w[0], X(pos.x) + w[1], Y(pos.y) + w[2], w[3], w[4]);
+      drawBursts(X, Y);
 
       /* pétales qui tombent + léger voile rose */
       ctx.fillStyle = "#ffc2d6";
@@ -223,7 +258,10 @@
     const tap = () => new Promise(r => box.addEventListener("pointerdown", r, { once: true }));
     async function say(text, photo) {
       dlg.style.display = "block";
-      if (photo) { phImg.src = photo; ph.style.display = "block"; }
+      if (photo) {
+         phImg.src = photo; ph.style.setProperty("--rot", (Math.random() * 7 - 3.5).toFixed(1) + "deg");
+         ph.style.display = "block"; ph.classList.remove("pop"); void ph.offsetWidth; ph.classList.add("pop");
+      }
       let skip = false; const on = () => skip = true;
       box.addEventListener("pointerdown", on);
       for (let i = 1; i <= text.length && !skip; i++) { dlg.textContent = text.slice(0, i); await sleep(28); }
@@ -239,7 +277,7 @@
         await walkTo(ROUTE[i]);
         const id = ROUTE[i][2];
         if (!id) continue;
-        if (ITEMS[id]) { found[id] = true; await say(T[id], PHOTOS[ITEMS[id].p]); }
+        if (ITEMS[id]) { found[id] = true; startBurst(ITEMS[id].x, ITEMS[id].y); await sleep(750); await say(T[id], PHOTOS[ITEMS[id].p]); }
         if (id === "d") {
           smokeT0 = t; await sleep(320); lucarioOn = true; await sleep(800);
           await say(T.l1()); await say(T.l2, PHOTOS[2]); await say(T.l3, PHOTOS[3]); await say(T.l4);
