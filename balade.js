@@ -128,6 +128,7 @@
         const k = Math.floor(s * 12);
         twinkle(cx - 14, cy - 10 + (k % 3)); twinkle(cx + 15, cy - 4 - (k % 2)); twinkle(cx + 2, cy - 22 + (k % 4));
       }
+    }
     function cake(bx, by, fl) {                    // petit gâteau kawaii (≈ 20 × 25 px) : bx = milieu, by = bas
       const rr = (x, y, w, h, c) => {              // rectangle aux coins arrondis
         rect(bx + x + 1, by + y, w - 2, 1, c); rect(bx + x, by + y + 1, w, h - 2, c); rect(bx + x + 1, by + y + h - 1, w - 2, 1, c);
