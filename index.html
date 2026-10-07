@@ -84,6 +84,20 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
 .confetti{position:absolute;top:-20px;width:8px;height:8px;z-index:2;pointer-events:none;
   animation:fall steps(30) forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+/* --- Lettre --- */
+#cake.done #caption{min-height:0}
+#cake.done #svg{width:min(30vw,130px,16vh)}
+#cake.done #couple{height:min(12vh,90px)}
+#letter{display:none;flex-direction:column;width:min(92vw,560px);flex:1;min-height:0;
+  background:#fff5f8;color:#3a2a52;border:3px solid #2b1b3d;box-shadow:0 5px 0 #2b1b3d;
+  padding:16px 20px;font:17px/1.7 Georgia,"Times New Roman",serif;image-rendering:auto;cursor:pointer}
+#letter.show{display:flex;animation:letterIn .6s ease-out both}
+@keyframes letterIn{from{opacity:0;transform:translateY(20px)}}
+#letterText{flex:1;overflow-y:auto;min-height:0}
+#letterText p{margin-bottom:1em}
+#next{display:none;align-self:center;margin-top:8px;padding:8px 14px;border:3px solid #2b1b3d;
+  background:#ff8fb1;color:#2b1b3d;font:10px "Press Start 2P","Courier New",monospace;
+  box-shadow:0 3px 0 #2b1b3d;cursor:pointer}
 @media (prefers-reduced-motion:reduce){
   #term.out,#cake.in{animation-duration:.01s}
   .flame{animation:none} .confetti{display:none}
@@ -108,6 +122,10 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
   <div id="caption"></div>
   <svg id="svg" viewBox="0 0 400 400" aria-label="Gâteau d'anniversaire"></svg>
   <img id="couple" src="nous.png" alt="Nous deux">
+  <div id="letter">
+  <div id="letterText"></div>
+  <button id="next">Suite ▾</button>
+</div>
   <button id="replay">Rallumer les bougies</button>
 </div>
 <script src="balade.js"></script>
@@ -118,7 +136,15 @@ const CANDLES = 8;                     // nombre de bougies (1 à 8)
    const PHOTOS = [
      "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg"
    ];
-const MESSAGE = "Je t'aime Maëlys. J'espère que t'as pas trouvé ca un peu nul et que t'as trouvé ça marrant quand même. C'était ça la petite surprise. Je suis désolé de pas pouvoir le fêter avec toi le jour de ton anniversaire. Je le pense souvent même si je le dis pas souvent mais je suis vraiment désolé pour tout. Merci de ne pas avoir disparue. Je suis vraiment heureux avec toi et je vais faire de mon mieux pour te rendre heureuse. Tous les moments qu'on a passé ensemble, ta sensibilité, ton sourire, ta gentillesse et ta façon d'être ouverte, c'est bateau, mais tu es tellement formidable. D'ailleurs il y a quelque chose qui me marque en ce moment, c'est à quel point on s'embrouille pas récemment. Je trouve qu'on a une très bonne synergie. Tu peux avoir confiance en toi et tes projets. Moi c'est vraiment avec toi que je suis le plus heureux et je veux que ça dure pour toujours. Je veux pouvoir être quelqu'un sur qui tu peux compter. Je sais que je ne te le montre pas toujours assez, mais je veux que tu saches à quel point tu comptes pour moi. Je suis triste de pas pouvoir fêter ça avec toi aujourd'hui, mais on se rattrape samedi. J'espère que tu vas passer une très bonne année et que tout se passera mieux dans ta vie. Joyeux anniversaire mon choubidou.";  // ton petit mot
+const MESSAGE = [
+  "Je t'aime Maëlys. J'espère que t'as pas trouvé ca un peu nul et que t'as trouvé ça marrant quand même. C'était ça la petite surprise.",
+  "Je suis désolé de pas pouvoir le fêter avec toi le jour de ton anniversaire. Je le pense souvent même si je le dis pas souvent mais je suis vraiment désolé pour tout. Merci de ne pas avoir disparue.",
+  "Je suis vraiment heureux avec toi et je vais faire de mon mieux pour te rendre heureuse. Tous les moments qu'on a passé ensemble, ta sensibilité, ton sourire, ta gentillesse et ta façon d'être ouverte, c'est bateau, mais tu es tellement formidable.",
+  "D'ailleurs il y a quelque chose qui me marque en ce moment, c'est à quel point on s'embrouille pas récemment. Je trouve qu'on a une très bonne synergie. Tu peux avoir confiance en toi et tes projets.",
+  "Moi c'est vraiment avec toi que je suis le plus heureux et je veux que ça dure pour toujours. Je veux pouvoir être quelqu'un sur qui tu peux compter. Je sais que je ne te le montre pas toujours assez, mais je veux que tu saches à quel point tu comptes pour moi.",
+  "Je suis triste de pas pouvoir fêter ça avec toi aujourd'hui, mais on se rattrape samedi. J'espère que tu vas passer une très bonne année et que tout se passera mieux dans ta vie.",
+  "Joyeux anniversaire mon choubidou."
+];
 const FROM    = "Ta destination : ton anniversaire";                              // texte de fin de chargement
 /* ========================================================= */
 
@@ -272,7 +298,7 @@ function setCaption() {
   if (remaining > 0) {
     cap.innerHTML = `<h1>Fais un vœu ✨</h1><p>Clique sur les bougies pour les éteindre.<br>Encore ${remaining} ${remaining > 1 ? "allumées" : "allumée"}.</p>`;
   } else {
-    cap.innerHTML = `<h1>Joyeux anniversaire Mon choubidou 🎂</h1><p>${MESSAGE}</p>`;
+    cap.innerHTML = `<h1>Joyeux anniversaire Mon choubidou 🎂</h1>`;
   }
 }
 
@@ -310,6 +336,37 @@ function celebrate() {
     $("#cake").appendChild(d);
     setTimeout(() => d.remove(), 8000);
   }
+  setTimeout(showLetter, 1800);
+}
+let letterRun = 0;
+
+async function showLetter() {
+  const run = ++letterRun;
+  const box = $("#letter"), txt = $("#letterText"), btn = $("#next");
+  txt.innerHTML = "";
+  btn.style.display = "none";
+  box.classList.add("show");
+
+  let fast = false;
+  box.onclick = () => { fast = true; };   // un clic sur la carte finit le paragraphe d'un coup
+
+  for (let i = 0; i < MESSAGE.length; i++) {
+    const p = document.createElement("p");
+    txt.appendChild(p);
+    fast = false;
+    for (const ch of MESSAGE[i]) {
+      if (run !== letterRun) return;
+      p.textContent += ch;
+      txt.scrollTop = txt.scrollHeight;
+      if (!fast) await sleep(20);
+    }
+    if (i < MESSAGE.length - 1) {
+      btn.style.display = "block";
+      await new Promise(r => { btn.onclick = e => { e.stopPropagation(); r(); }; });
+      if (run !== letterRun) return;
+      btn.style.display = "none";
+    }
+  }
 }
 
 function showCake() {
@@ -321,6 +378,9 @@ function showCake() {
 }
 
 $("#replay").onclick = () => {
+  letterRun++;
+  $("#letter").classList.remove("show");
+  $("#letterText").innerHTML = "";
   remaining = Math.max(1, Math.min(8, CANDLES));
   $("#cake").classList.remove("done");
   buildCake();
