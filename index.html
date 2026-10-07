@@ -101,12 +101,12 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
 @media (prefers-reduced-motion:reduce){
   #term.out,#cake.in{animation-duration:.01s}
   .flame{animation:none} .confetti{display:none}
+  #term.charge,#term.charge::after{animation:none} #flash{display:none}
 }
 @media (max-width:700px){
   #term{flex-direction:column}
   #gallery{width:100%;max-height:40%}
   #gallery figure{width:calc(33.33% - 8px)}
-  #term.charge,#term.charge::after{animation:none} #flash{display:none}
 }
 </style>
 </head>
