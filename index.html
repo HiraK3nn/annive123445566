@@ -34,7 +34,24 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
 #skip:focus-visible{outline:2px solid var(--mint)}
 #term.out{animation:tpOut 1s ease-in forwards}
 @keyframes tpOut{0%{transform:none;filter:none}40%{transform:scale(1,.01);filter:brightness(4)}100%{transform:scale(0,.01);filter:brightness(4)}}
+/* --- Charge avant téléportation --- */
+#term.charge{animation:shake .09s linear infinite;
+  text-shadow:2px 0 #ff3b6b,-2px 0 #3be3ff}
+#term.charge::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.07) 0 2px,transparent 2px 4px);
+  animation:flicker .12s steps(2) infinite}
+@keyframes shake{
+  0%{transform:translate(0,0)}
+  25%{transform:translate(-4px,2px)}
+  50%{transform:translate(3px,-3px) skewX(1deg)}
+  75%{transform:translate(-2px,-2px)}
+  100%{transform:translate(4px,3px) skewX(-1deg)}}
+@keyframes flicker{50%{opacity:.4}}
 
+/* --- Flash blanc --- */
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50}
+#flash.go{animation:flash 1.1s ease-out forwards}
+@keyframes flash{0%{opacity:0}12%{opacity:1}100%{opacity:0}}
 /* ====== Écran 2 : gâteau ====== */
 #cake{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
   gap:8px;padding:16px;font-family:"Press Start 2P","Courier New",monospace;color:#ffe8ef;
@@ -75,11 +92,12 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
   #term{flex-direction:column}
   #gallery{width:100%;max-height:40%}
   #gallery figure{width:calc(33.33% - 8px)}
+  #term.charge,#term.charge::after{animation:none} #flash{display:none}
 }
 </style>
 </head>
 <body>
-
+<div id="flash"></div>
 <div id="term">
   <button id="skip">passer</button>
   <div id="log"></div>
@@ -167,11 +185,22 @@ async function boot() {
   teleport();
 }
 
-function teleport() {
+async function teleport() {
   if (teleported) return;
   teleported = true;
   const t = $("#term");
+
+  // 1) Charge : le terminal tremble
+  t.classList.add("charge");
+  await typeLine("> TÉLÉPORTATION EN COURS...", "ok");
+  await sleep(skipped ? 300 : 800);
+
+  // 2) Flash + écrasement
+  t.classList.remove("charge");
   t.classList.add("out");
+  $("#flash").classList.add("go");
+
+  // 3) Suite (balade puis gâteau)
   setTimeout(() => {
     t.style.display = "none";
     document.body.style.background = "var(--term-bg)";
