@@ -88,16 +88,13 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
 #cake.done #caption{min-height:0}
 #cake.done #svg{width:min(30vw,130px,16vh)}
 #cake.done #couple{height:min(12vh,90px)}
-#letter{display:none;flex-direction:column;width:min(92vw,560px);flex:1;min-height:0;
-  background:#fff5f8;color:#3a2a52;border:3px solid #2b1b3d;box-shadow:0 5px 0 #2b1b3d;
-  padding:16px 20px;font:17px/1.7 Georgia,"Times New Roman",serif;image-rendering:auto;cursor:pointer}
-#letter.show{display:flex;animation:letterIn .6s ease-out both}
-@keyframes letterIn{from{opacity:0;transform:translateY(20px)}}
-#letterText{flex:1;overflow-y:auto;min-height:0}
-#letterText p{margin-bottom:1em}
-#next{display:none;align-self:center;margin-top:8px;padding:8px 14px;border:3px solid #2b1b3d;
-  background:#ff8fb1;color:#2b1b3d;font:10px "Press Start 2P","Courier New",monospace;
-  box-shadow:0 3px 0 #2b1b3d;cursor:pointer}
+#letter{display:none;position:relative;width:min(92vw,560px);flex:1;min-height:0;overflow:hidden;
+  -webkit-mask-image:linear-gradient(transparent,#000 12%,#000 85%,transparent);
+  mask-image:linear-gradient(transparent,#000 12%,#000 85%,transparent)}
+#letter.show{display:block}
+#letterText{position:absolute;left:0;right:0;top:0;padding:0 8px;text-align:center;
+  font-size:clamp(9px,2.6vw,13px);line-height:2.3;text-shadow:3px 3px 0 #2b1b3d;
+  will-change:transform}
 @media (prefers-reduced-motion:reduce){
   #term.out,#cake.in{animation-duration:.01s}
   .flame{animation:none} .confetti{display:none}
@@ -123,8 +120,7 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
   <svg id="svg" viewBox="0 0 400 400" aria-label="Gâteau d'anniversaire"></svg>
   <img id="couple" src="nous.png" alt="Nous deux">
   <div id="letter">
-  <div id="letterText"></div>
-  <button id="next">Suite ▾</button>
+    <div id="letterText"></div>
 </div>
   <button id="replay">Rallumer les bougies</button>
 </div>
@@ -340,33 +336,28 @@ function celebrate() {
 }
 let letterRun = 0;
 
-async function showLetter() {
+const SPEED = 22;   // vitesse de défilement en pixels par seconde (plus petit = plus lent)
+
+function showLetter() {
   const run = ++letterRun;
-  const box = $("#letter"), txt = $("#letterText"), btn = $("#next");
-  txt.innerHTML = "";
-  btn.style.display = "none";
+  const box = $("#letter"), txt = $("#letterText");
+  txt.textContent = [].concat(MESSAGE).join(" ");
   box.classList.add("show");
 
-  let fast = false;
-  box.onclick = () => { fast = true; };   // un clic sur la carte finit le paragraphe d'un coup
+  let y = box.clientHeight;              // le texte part du bas de la zone
+  const stopY = box.clientHeight * 0.6 - txt.offsetHeight;   // s'arrête quand la fin du texte est bien visible
+  let paused = false, last = performance.now();
+  box.onpointerdown = () => { paused = true; };    // maintenir le doigt/clic = pause
+  box.onpointerup = box.onpointerleave = () => { paused = false; };
 
-  for (let i = 0; i < MESSAGE.length; i++) {
-    const p = document.createElement("p");
-    txt.appendChild(p);
-    fast = false;
-    for (const ch of MESSAGE[i]) {
-      if (run !== letterRun) return;
-      p.textContent += ch;
-      txt.scrollTop = txt.scrollHeight;
-      if (!fast) await sleep(20);
-    }
-    if (i < MESSAGE.length - 1) {
-      btn.style.display = "block";
-      await new Promise(r => { btn.onclick = e => { e.stopPropagation(); r(); }; });
-      if (run !== letterRun) return;
-      btn.style.display = "none";
-    }
+  function step(now) {
+    if (run !== letterRun) return;
+    if (!paused) y = Math.max(stopY, y - SPEED * (now - last) / 1000);
+    last = now;
+    txt.style.transform = `translateY(${y}px)`;
+    if (y > stopY) requestAnimationFrame(step);
   }
+  requestAnimationFrame(step);
 }
 
 function showCake() {
