@@ -124,6 +124,7 @@ html,body{height:100%;background:var(--term-bg);overflow:hidden}
 </div>
   <button id="replay">Rallumer les bougies</button>
 </div>
+<audio id="music" src="musique2.mp3" preload="auto"></audio>
 <script src="balade.js"></script>
 <script>
 /* ==================== À PERSONNALISER ==================== */
@@ -141,7 +142,8 @@ const MESSAGE = [
   "Je suis triste de pas pouvoir fêter ça avec toi aujourd'hui, mais on se rattrape samedi. J'espère que tu vas passer une très bonne année et que tout se passera mieux dans ta vie.",
   "Joyeux anniversaire mon choubidou."
 ];
-const FROM    = "Ta destination : ton anniversaire";                              // texte de fin de chargement
+const FROM    = "Ta destination : ton anniversaire";    
+const VOLUME  = 0.6;   // volume de la musique (0 à 1)// texte de fin de chargement
 /* ========================================================= */
 
 const $ = s => document.querySelector(s);
@@ -318,8 +320,29 @@ function blowOut(c) {
   setCaption();
   if (remaining === 0) setTimeout(celebrate, 500);
 }
+function fadeTo(m, target, ms) {
+  const start = m.volume, t0 = performance.now();
+  (function f(now) {
+    const k = Math.min(1, (now - t0) / ms);
+    m.volume = start + (target - start) * k;
+    if (k < 1) requestAnimationFrame(f);
+  })(t0);
+}
 
+function startMusic() {
+  const m = $("#music");
+  m.currentTime = 0;
+  m.volume = 0;
+  m.play().then(() => fadeTo(m, VOLUME, 3000)).catch(() => {});
+}
+
+function stopMusic() {
+  $("#music").pause();
+}
 function celebrate() {
+  startMusic();
+  $("#cake").classList.add("done");
+  // ... le reste ne change pas
   $("#cake").classList.add("done");
   const colors = ["#ffb3cb", "#d9c2ff", "#ffd166", "#8ee3c8", "#a9c8ff"];
   for (let i = 0; i < 80; i++) {
@@ -369,6 +392,7 @@ function showCake() {
 }
 
 $("#replay").onclick = () => {
+  stopMusic();
   letterRun++;
   $("#letter").classList.remove("show");
   $("#letterText").innerHTML = "";
